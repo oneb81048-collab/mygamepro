@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professeur Volta - IA Électricité</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --bg-color: #f4f6f7;
+            --chat-bg: #ffffff;
+            --user-msg-bg: #3498db;
+            --ai-msg-bg: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--chat-bg);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 { margin: 0; font-size: 1.5rem; }
+        .subtitle { font-size: 0.9rem; opacity: 0.8; margin-top: 5px; }
+
+        .api-setup {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            background: rgba(0,0,0,0.2);
+            padding: 8px;
+            border-radius: 5px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #apiKeyInput {
+            padding: 5px;
+            border-radius: 4px;
+            border: none;
+            width: 250px;
+        }
+
+        #chat-window {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 15px;
+            border-radius: 10px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background-color: var(--user-msg-bg);
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        .message.ai {
+            align-self: flex-start;
+            background-color: var(--ai-msg-bg);
+            color: #333;
+            border-bottom-left-radius: 2px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .input-area {
+            padding: 20px;
+            background: #fff;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+        }
+
+        textarea {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+            height: 50px;
+            font-family: inherit;
+        }
+
+        button {
+            padding: 0 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        button:hover { background-color: #34495e; }
+        button:disabled { background-color: #95a5a6; cursor: not-allowed; }
+
+        /* Styles pour les équations et le code */
+        pre { background: #2d3436; color: #fff; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        code { font-family: 'Courier New', monospace; }
+        .thinking { font-style: italic; color: #7f8c8d; font-size: 0.9em; margin-bottom: 5px; }
+
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <header>
+        <div>
+            <h1>⚡ Professeur Volta</h1>
+            <div class="subtitle">Expert en Électricité & Électronique (Open Source)</div>
+        </div>
+        <div class="api-setup">
+            <label for="apiKeyInput">Clé API Hugging Face (Gratuite) :</label>
+            <input type="password" id="apiKeyInput" placeholder="Collez votre clé hf_... ici">
+        </div>
+    </header>
+
+    <div id="chat-window">
+        <div class="message ai">
+            Bonjour ! Je suis le Professeur Volta. Je suis configuré pour répondre à toutes vos questions sur l'électricité, du simple circuit aux équations de Maxwell.
+            <br><br>
+            <em>Entrez votre clé API ci-dessus pour commencer, puis posez votre question.</em>
+        </div>
+    </div>
+
+    <div class="input-area">
+        <textarea id="userInput" placeholder="Ex: Explique-moi la loi d'Ohm avec une analogie hydraulique..."></textarea>
+        <button id="sendBtn" onclick="sendMessage()">Envoyer</button>
+    </div>
+</div>
+
+<script>
+    // Configuration du modèle Open Source (Mistral-Nemo-Instruct est excellent et libre)
+    const MODEL_ID = "mistralai/Mistral-Nemo-Instruct-2407"; 
+    
+    const chatWindow = document.getElementById('chat-window');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+
+    // Sauvegarde de la clé API dans le navigateur pour ne pas la retaper
+    if(localStorage.getItem('hf_api_key')) {
+        apiKeyInput.value = localStorage.getItem('hf_api_key');
+    }
+
+    apiKeyInput.addEventListener('change', () => {
+        localStorage.setItem('hf_api_key', apiKeyInput.value);
+    });
+
+    // Gestion de la touche "Entrée"
+    userInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    async function sendMessage() {
+        const text = userInput.value.trim();
+        const apiKey = apiKeyInput.value.trim();
+
+        if (!text) return;
+        if (!apiKey) {
+            alert("Veuillez entrer une clé API Hugging Face (gratuite) dans l'en-tête.");
+            return;
+        }
+
+        // Afficher message utilisateur
+        addMessage(text, 'user');
+        userInput.value = '';
+        sendBtn.disabled = true;
+        sendBtn.innerText = "Réflexion...";
+
+        // Création du prompt système pour forcer le rôle de Professeur
+        const systemPrompt = `Tu es le "Professeur Volta", un expert pédagogique et rigoureux en électricité, électronique et électrotechnique.
+        Consignes :
+        1. Utilise un ton professoral mais bienveillant.
+        2. Si des calculs sont nécessaires, utilise le format LaTeX entre des signes dollars (ex: $U = R \\times I$).
+        3. Explique les concepts complexes avec des analogies simples.
+        4. Priorise la sécurité électrique dans tes conseils.
+        5. Réponds en français.`;
+
+        // Format du prompt pour Mistral/Llama
+        const formattedPrompt = `<s>[INST] ${systemPrompt} \n\n Question de l'élève : ${text} [/INST]`;
+
+        try {
+            const response = await queryHuggingFace(formattedPrompt, apiKey);
+            
+            let aiText = "";
+            if (response.error) {
+                aiText = `⚠️ Erreur API : ${response.error}. (Le modèle est peut-être en train de charger, réessayez dans 30 secondes).`;
+            } else if (Array.isArray(response) && response[0].generated_text) {
+                // Nettoyage de la réponse pour ne garder que la partie générée (supprimer le prompt)
+                let fullText = response[0].generated_text;
+                aiText = fullText.replace(formattedPrompt, "").trim();
+            } else {
+                aiText = "Je n'ai pas reçu de réponse cohérente. Vérifiez votre clé API.";
+            }
+
+            addMessage(aiText, 'ai');
+
+        } catch (error) {
+            addMessage("Une erreur technique est survenue : " + error.message, 'ai');
+        }
+
+        sendBtn.disabled = false;
+        sendBtn.innerText = "Envoyer";
+    }
+
+    async function queryHuggingFace(prompt, token) {
+        const response = await fetch(
+            `https://api-inference.huggingface.co/models/${MODEL_ID}`,
+            {
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                method: "POST",
+                body: JSON.stringify({
+                    inputs: prompt,
+                    parameters: {
+                        max_new_tokens: 1024, // Réponse longue
+                        temperature: 0.7,     // Créativité équilibrée
+                        return_full_text: false
+                    }
+                }),
+            }
+        );
+        return await response.json();
+    }
+
+    function addMessage(text, sender) {
+        const div = document.createElement('div');
+        div.classList.add('message', sender);
+        
+        // Conversion Markdown -> HTML
+        if (sender === 'ai') {
+            div.innerHTML = marked.parse(text);
+        } else {
+            div.textContent = text;
+        }
+
+        chatWindow.appendChild(div);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+
+        // Rendu des formules mathématiques (LaTeX)
+        if (window.MathJax) {
+            MathJax.typesetPromise([div]);
+        }
+    }
+</script>
+
+</body>
+</html>
