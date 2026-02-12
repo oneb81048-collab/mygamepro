@@ -2,8 +2,8 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Aviator Mobile Fix - Richard Studio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aviator Pro - Richard Studio</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -15,152 +15,238 @@
             --text: #9aa8b9;
         }
 
-        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; }
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
-        html, body {
-            margin: 0; padding: 0;
+        body {
             background-color: var(--bg);
             color: white;
             font-family: 'Roboto', sans-serif;
-            /* C'EST ICI LE SECRET POUR MOBILE : 100dvh */
-            height: 100vh; 
-            height: 100dvh; 
-            width: 100vw;
-            overflow: hidden; /* Empêche le scroll complet */
+            margin: 0;
+            height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
-        /* --- HEADER (Fixe en haut) --- */
+        /* --- HEADER --- */
         .header {
-            height: 50px;
+            height: 60px;
             background: #151e27;
             display: flex;
             align-items: center;
             padding: 0 15px;
             border-bottom: 1px solid #2c3b4d;
             justify-content: space-between;
-            flex-shrink: 0; /* Ne jamais rétrécir */
-            z-index: 20;
         }
 
-        .logo { font-weight: 900; font-size: 1.2rem; color: var(--red); font-style: italic; }
+        .logo { font-weight: 900; font-size: 1.4rem; color: var(--red); font-style: italic; }
         
         .history {
-            display: flex; gap: 5px; overflow-x: auto; max-width: 60%;
-            scrollbar-width: none; align-items: center; height: 100%;
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            max-width: 60%;
+            scrollbar-width: none; /* Firefox */
         }
-        .history::-webkit-scrollbar { display: none; }
+        .history::-webkit-scrollbar { display: none; } /* Chrome */
 
         .badge {
-            padding: 4px 8px; border-radius: 10px; font-size: 0.7rem;
-            font-weight: bold; background: #2c3b4d; color: #ddd; white-space: nowrap;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            background: #2c3b4d;
+            color: #ddd;
+            white-space: nowrap;
         }
         .badge.high { color: var(--orange); border: 1px solid var(--orange); }
         .badge.low { color: #3498db; }
 
-        /* --- ZONE DE JEU (Flexible) --- */
+        /* --- ZONE DE JEU (CANVAS) --- */
         .game-stage {
             position: relative;
-            flex-grow: 1; /* Prend tout l'espace restant */
-            min-height: 0; /* Important pour éviter le débordement */
+            flex-grow: 1;
             background: radial-gradient(circle at 50% 100%, #2c1a1e 0%, #0f1923 60%);
-            display: flex; justify-content: center; align-items: center;
             overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+        }
 
-        .center-info { position: relative; z-index: 10; text-align: center; pointer-events: none; }
-        #multiplier { font-size: 3.5rem; font-weight: 900; text-shadow: 0 0 30px rgba(0,0,0,0.8); transition: color 0.2s; }
-        .status-text { font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-size: 1rem; }
-        .loader { width: 150px; height: 4px; background: #222; border-radius: 3px; margin: 0 auto; overflow: hidden; display: none; }
-        .loader-bar { height: 100%; background: var(--red); width: 0%; }
+        .center-info {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
 
-        /* --- CONTRÔLES (Fixe en bas) --- */
+        #multiplier {
+            font-size: 4rem;
+            font-weight: 900;
+            text-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+
+        .status-text {
+            color: var(--text);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .loader {
+            width: 200px;
+            height: 6px;
+            background: #222;
+            border-radius: 3px;
+            margin: 0 auto;
+            overflow: hidden;
+            display: none;
+        }
+        .loader-bar { height: 100%; background: var(--red); width: 0%; transition: width 0.1s linear; }
+
+        /* --- CONTRÔLES --- */
         .controls {
             background: var(--panel);
+            padding: 15px;
             border-top: 1px solid #333;
-            padding: 10px 15px;
-            /* Gestion iPhone X et barres Android */
-            padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
-            flex-shrink: 0; /* Ne jamais cacher cette partie */
-            z-index: 30;
+        }
+
+        .control-container {
+            max-width: 500px; /* Limite la largeur sur PC */
+            margin: 0 auto;
             width: 100%;
         }
 
-        .control-container { max-width: 500px; margin: 0 auto; width: 100%; }
-
         .balance-row {
-            display: flex; justify-content: space-between; margin-bottom: 8px;
-            font-size: 0.85rem; color: var(--text); align-items: center;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: var(--text);
         }
 
         .bet-interface {
-            display: grid; grid-template-columns: 1fr 130px; gap: 8px;
-            background: #12181f; padding: 8px; border-radius: 12px; border: 1px solid #2c3b4d;
+            display: grid;
+            grid-template-columns: 1fr 140px;
+            gap: 10px;
+            background: #12181f;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #2c3b4d;
         }
 
-        .input-group { display: flex; flex-direction: column; gap: 6px; }
+        /* Responsive : Sur mobile très petit, on stack */
+        @media (max-width: 350px) {
+            .bet-interface { grid-template-columns: 1fr; }
+            .btn-action { height: 60px !important; }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
 
         .stepper {
-            display: flex; background: #000; border-radius: 20px; padding: 2px;
-            align-items: center; border: 1px solid #333; height: 36px;
+            display: flex;
+            background: #000;
+            border-radius: 20px;
+            padding: 3px;
+            align-items: center;
+            border: 1px solid #333;
         }
-        .stepper input { background: transparent; border: none; color: white; text-align: center; width: 100%; font-size: 1rem; font-weight: bold; }
-        .btn-circle {
-            width: 32px; height: 32px; border-radius: 50%; border: 1px solid #444;
-            background: #1a1a1a; color: white; cursor: pointer; font-size: 1.2rem;
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-        }
-        .btn-circle:active { background: #333; }
 
-        .quick-bets { display: flex; gap: 4px; }
-        .quick-bets button {
-            flex: 1; background: #2c3b4d; border: none; color: white; border-radius: 4px;
-            padding: 6px 0; font-size: 0.7rem; cursor: pointer; font-weight: bold;
+        .stepper input {
+            background: transparent;
+            border: none;
+            color: white;
+            text-align: center;
+            width: 100%;
+            font-size: 1.1rem;
+            font-weight: bold;
         }
-        .quick-bets button:active { background: #3e4f63; }
+
+        .btn-circle {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            border: 1px solid #444;
+            background: #1a1a1a;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .quick-bets {
+            display: flex;
+            gap: 5px;
+        }
+        .quick-bets button {
+            flex: 1;
+            background: #2c3b4d;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            padding: 6px 0;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
 
         .btn-action {
-            height: 100%; width: 100%; border: none; border-radius: 10px; cursor: pointer;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-weight: 900; color: white; box-shadow: 0 4px 0 rgba(0,0,0,0.3);
-            transition: 0.1s; min-height: 60px; /* Hauteur minimum garantie */
+            height: 100%;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: white;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+            transition: 0.1s;
         }
-        .btn-action:active { transform: translateY(2px); box-shadow: none; }
-        
-        .btn-green { background: var(--green); box-shadow: 0 4px 0 #1b7e43; }
-        .btn-red { background: var(--red); box-shadow: 0 4px 0 #a3112d; }
-        .btn-orange { background: var(--orange); color: #4a3b00; text-shadow: none; box-shadow: 0 4px 0 #c29d0b; }
-        
-        .btn-main-text { font-size: 1.1rem; text-transform: uppercase; }
-        .btn-sub-text { font-size: 0.65rem; font-weight: normal; opacity: 0.9; margin-top: 2px; }
+        .btn-action:active { transform: translateY(3px); box-shadow: none; }
 
-        /* OVERLAY START */
+        .btn-green { background: var(--green); }
+        .btn-red { background: var(--red); }
+        .btn-orange { background: var(--orange); color: #4a3b00; text-shadow: none; }
+        
+        .btn-main-text { font-size: 1.3rem; }
+        .btn-sub-text { font-size: 0.7rem; font-weight: normal; opacity: 0.9; }
+
+        /* OVERLAY AUDIO */
         #start-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.85); z-index: 999;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
         }
         .start-btn {
-            padding: 15px 50px; background: var(--red); color: white;
+            padding: 15px 40px; background: var(--red); color: white;
             border: none; border-radius: 30px; font-size: 1.2rem; font-weight: bold;
-            cursor: pointer; margin-top: 20px; box-shadow: 0 0 20px rgba(248, 44, 85, 0.5);
+            cursor: pointer; margin-top: 20px; animation: pulse 2s infinite;
         }
+        @keyframes pulse { 0% {transform: scale(1);} 50% {transform: scale(1.05);} 100% {transform: scale(1);} }
     </style>
 </head>
 <body>
 
 <div id="start-overlay">
-    <div class="logo" style="font-size: 2.5rem; margin-bottom: 20px;">AVIATOR</div>
-    <p style="color:#aaa; margin-top:0;">Version Mobile Pro</p>
-    <button class="start-btn" onclick="initGame()">JOUER</button>
+    <div class="logo" style="font-size: 3rem; margin-bottom: 20px;">AVIATOR PRO</div>
+    <button class="start-btn" onclick="initGame()">LANCER LE JEU</button>
 </div>
 
 <div class="header">
     <div class="logo">AVIATOR</div>
-    <div class="history" id="history-bar"></div>
+    <div class="history" id="history-bar">
+        </div>
 </div>
 
 <div class="game-stage">
@@ -176,8 +262,8 @@
 <div class="controls">
     <div class="control-container">
         <div class="balance-row">
-            <span>SOLDE</span>
-            <span style="color:var(--green); font-weight:bold; font-size:1.1rem;"><span id="balance">100000</span> F</span>
+            <span>Solde Disponible</span>
+            <span style="color:var(--green); font-weight:bold;"><span id="balance">100000</span> FCFA</span>
         </div>
 
         <div class="bet-interface">
@@ -204,190 +290,361 @@
 </div>
 
 <script>
-    // --- MOTEUR AUDIO ---
+    // --- MOTEUR AUDIO (Web Audio API) ---
     const AudioEngine = {
-        ctx: null, engineOsc: null, engineGain: null,
-        init: function() { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+        ctx: null,
+        engineOsc: null,
+        engineGain: null,
+
+        init: function() {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        },
+
         playTone: function(type) {
             if (!this.ctx) return;
-            const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
-            osc.connect(gain); gain.connect(this.ctx.destination);
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
             const now = this.ctx.currentTime;
+            
             if (type === 'click') {
-                osc.frequency.setValueAtTime(800, now); gain.gain.setValueAtTime(0.05, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1); osc.start(now); osc.stop(now + 0.1);
-            } else if (type === 'cashout') {
-                osc.type = 'triangle'; osc.frequency.setValueAtTime(600, now); osc.frequency.linearRampToValueAtTime(1200, now + 0.1);
-                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.3); osc.start(now); osc.stop(now + 0.3);
-            } else if (type === 'crash') {
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, now); osc.frequency.exponentialRampToValueAtTime(30, now + 0.4);
-                gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.4); osc.start(now); osc.stop(now + 0.4);
+                osc.frequency.setValueAtTime(600, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } 
+            else if (type === 'cashout') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.linearRampToValueAtTime(1200, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            }
+            else if (type === 'crash') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(40, now + 0.4);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
             }
         },
+
         startEngine: function() {
             if (!this.ctx) return;
-            this.engineOsc = this.ctx.createOscillator(); this.engineGain = this.ctx.createGain();
-            this.engineOsc.type = 'sawtooth'; this.engineOsc.frequency.setValueAtTime(50, this.ctx.currentTime);
-            this.engineGain.gain.setValueAtTime(0.03, this.ctx.currentTime);
-            const filter = this.ctx.createBiquadFilter(); filter.type = "lowpass"; filter.frequency.value = 400;
-            this.engineOsc.connect(filter); filter.connect(this.engineGain); this.engineGain.connect(this.ctx.destination);
+            this.engineOsc = this.ctx.createOscillator();
+            this.engineGain = this.ctx.createGain();
+            this.engineOsc.type = 'sawtooth';
+            this.engineOsc.frequency.setValueAtTime(50, this.ctx.currentTime); // Bas régime
+            this.engineGain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+            
+            // Filtre pour adoucir le son
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = "lowpass";
+            filter.frequency.value = 400;
+
+            this.engineOsc.connect(filter);
+            filter.connect(this.engineGain);
+            this.engineGain.connect(this.ctx.destination);
+            
             this.engineOsc.start();
         },
-        updateEngine: function(mult) {
-            if (this.engineOsc) this.engineOsc.frequency.setTargetAtTime(50 + (mult * 25), this.ctx.currentTime, 0.1);
+
+        updateEngine: function(multiplier) {
+            if (this.engineOsc) {
+                // Le son devient plus aigu quand le multiplicateur monte
+                const pitch = 50 + (multiplier * 20); 
+                this.engineOsc.frequency.setTargetAtTime(pitch, this.ctx.currentTime, 0.1);
+            }
         },
-        stopEngine: function() { if (this.engineOsc) { this.engineOsc.stop(); this.engineOsc = null; } }
+
+        stopEngine: function() {
+            if (this.engineOsc) {
+                this.engineOsc.stop();
+                this.engineOsc = null;
+            }
+        }
     };
 
-    // --- VARIABLES JEU ---
+    // --- LOGIQUE DU JEU ---
     const STATE = { WAITING: 0, FLYING: 1, CRASHED: 2 };
     let currentState = STATE.WAITING;
     let balance = 100000;
-    let currentBet = 0, nextRoundBet = 0;
-    let multiplier = 1.0, crashPoint = 0, flightStartTime = 0;
+    let betAmount = 1000;
+    let currentBet = 0; // Mise active dans le jeu
+    let nextRoundBet = 0; // Mise pour le prochain tour
+    let multiplier = 1.0;
+    let crashPoint = 0;
+    let flightStartTime = 0;
     let hasCashedOut = false;
 
+    // Canvas
     const canvas = document.getElementById('game-canvas');
     const ctx = canvas.getContext('2d');
     
     function resizeCanvas() {
-        // Force la taille interne du canvas pour éviter le flou
-        const rect = canvas.parentElement.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
+        canvas.width = canvas.parentElement.offsetWidth;
+        canvas.height = canvas.parentElement.offsetHeight;
     }
     window.addEventListener('resize', resizeCanvas);
 
     function initGame() {
         document.getElementById('start-overlay').style.display = 'none';
-        AudioEngine.init(); AudioEngine.ctx.resume();
-        resizeCanvas(); startWaitingPhase();
+        AudioEngine.init();
+        AudioEngine.ctx.resume(); // Débloquer l'audio
+        resizeCanvas();
+        startWaitingPhase();
     }
 
     function startWaitingPhase() {
         currentState = STATE.WAITING;
+        
+        // Reset UI
         document.getElementById('multiplier').style.display = 'none';
         document.getElementById('status-text').style.display = 'block';
-        document.getElementById('status-text').innerText = "PROCHAIN TOUR...";
+        document.getElementById('status-text').innerText = "PROCHAIN TOUR DANS...";
+        document.getElementById('status-text').style.color = "white";
         document.getElementById('loader').style.display = 'block';
         
+        // Gestion des mises
         if (nextRoundBet > 0) {
-            currentBet = nextRoundBet; nextRoundBet = 0;
-            balance -= currentBet; updateBalance();
-        } else currentBet = 0;
+            currentBet = nextRoundBet;
+            nextRoundBet = 0;
+            balance -= currentBet;
+            updateBalance();
+        } else {
+            currentBet = 0;
+        }
         updateButton();
 
+        // Barre de chargement (3 secondes)
         let progress = 0;
         const interval = setInterval(() => {
-            progress += 4; // Plus rapide pour le test
+            progress += 2;
             document.getElementById('loader-bar').style.width = progress + '%';
-            if (progress >= 100) { clearInterval(interval); startFlight(); }
-        }, 50);
+            if (progress >= 100) {
+                clearInterval(interval);
+                startFlight();
+            }
+        }, 50); // 50ms * 50 steps = 2500ms
     }
 
     function startFlight() {
-        currentState = STATE.FLYING; hasCashedOut = false; multiplier = 1.0; flightStartTime = Date.now();
-        crashPoint = (0.98 / (1 - Math.random()));
-        if(Math.random() < 0.05) crashPoint = 1.00;
+        currentState = STATE.FLYING;
+        hasCashedOut = false;
+        multiplier = 1.0;
+        flightStartTime = Date.now();
         
+        // Calcul du crash (algo simple)
+        crashPoint = (0.99 / (1 - Math.random()));
+        if(crashPoint > 50) crashPoint = 50; // Cap pour la démo
+        // 5% de chance de crash instantané à 1.00x
+        if(Math.random() < 0.05) crashPoint = 1.00;
+
+        // UI Updates
         document.getElementById('loader').style.display = 'none';
         document.getElementById('status-text').style.display = 'none';
-        const multEl = document.getElementById('multiplier');
-        multEl.style.display = 'block'; multEl.style.color = "white"; multEl.innerText = "1.00x";
+        document.getElementById('multiplier').style.display = 'block';
+        document.getElementById('multiplier').style.color = "white";
+        document.getElementById('multiplier').innerText = "1.00x";
         
-        AudioEngine.startEngine(); updateButton(); requestAnimationFrame(gameLoop);
+        AudioEngine.startEngine();
+        updateButton();
+        requestAnimationFrame(gameLoop);
     }
 
     function gameLoop() {
         if (currentState !== STATE.FLYING) return;
-        const elapsed = (Date.now() - flightStartTime) / 1000;
-        multiplier = 1.0 + Math.pow(elapsed, 2) * 0.12;
+
+        const now = Date.now();
+        const elapsed = (now - flightStartTime) / 1000;
         
+        // Formule de croissance exponentielle
+        multiplier = 1.0 + Math.pow(elapsed, 2) * 0.1;
+        
+        // Mise à jour visuelle
         document.getElementById('multiplier').innerText = multiplier.toFixed(2) + "x";
         AudioEngine.updateEngine(multiplier);
         drawCurve(elapsed);
 
         if (currentBet > 0 && !hasCashedOut) {
-            let win = Math.floor(currentBet * multiplier);
+            // Met à jour le bouton avec le gain potentiel
+            let potentialWin = Math.floor(currentBet * multiplier);
             document.getElementById('btn-text').innerText = "ENCAISSER";
-            document.getElementById('btn-sub').innerText = win + " F";
+            document.getElementById('btn-sub').innerText = potentialWin + " FCFA";
         }
 
-        if (multiplier >= crashPoint) crash();
-        else requestAnimationFrame(gameLoop);
+        // Crash ?
+        if (multiplier >= crashPoint) {
+            crash();
+        } else {
+            requestAnimationFrame(gameLoop);
+        }
     }
 
     function crash() {
-        currentState = STATE.CRASHED; AudioEngine.stopEngine(); AudioEngine.playTone('crash');
-        const multEl = document.getElementById('multiplier');
-        multEl.innerText = "PARTI !"; multEl.style.color = "var(--red)";
+        currentState = STATE.CRASHED;
+        AudioEngine.stopEngine();
+        AudioEngine.playTone('crash');
+        
+        document.getElementById('multiplier').innerText = "L'AVION EST PARTI";
+        document.getElementById('multiplier').style.color = "var(--red)";
+        document.getElementById('multiplier').style.fontSize = "2rem"; // Plus petit
         
         addHistory(crashPoint);
-        currentBet = 0; updateButton(); setTimeout(startWaitingPhase, 3000);
+        currentBet = 0; // Perdu si pas encaissé
+        updateButton();
+        
+        setTimeout(startWaitingPhase, 3000);
     }
 
+    // --- DESSIN DU CANVAS ---
     function drawCurve(time) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const w = canvas.width, h = canvas.height;
-        let progressX = Math.min(time * 60, w - 60);
-        let progressY = Math.min(Math.pow(time, 2) * 25, h - 80);
-        const curX = progressX, curY = h - progressY;
-
-        ctx.beginPath(); ctx.lineWidth = 4; ctx.strokeStyle = "#F82C55";
-        ctx.moveTo(0, h); ctx.quadraticCurveTo(curX / 2, h, curX, curY); ctx.stroke();
         
-        ctx.lineTo(curX, h); ctx.lineTo(0, h);
-        const grad = ctx.createLinearGradient(0, curY, 0, h);
-        grad.addColorStop(0, "rgba(248, 44, 85, 0.4)"); grad.addColorStop(1, "rgba(248, 44, 85, 0)");
-        ctx.fillStyle = grad; ctx.fill();
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Point de départ (bas gauche)
+        const startX = 0;
+        const startY = h;
+        
+        // Point actuel (calculé selon le temps)
+        // On limite X et Y pour ne pas sortir de l'écran
+        let progressX = Math.min(time * 50, w - 50); // Avance de 50px par seconde
+        let progressY = Math.min(Math.pow(time, 2) * 20, h - 100); 
+        
+        const currentX = startX + progressX;
+        const currentY = startY - progressY;
 
-        ctx.font = "30px Arial"; ctx.fillText("✈️", curX - 10, curY - 10);
+        ctx.beginPath();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = "#F82C55";
+        ctx.lineCap = "round";
+        
+        // Courbe de Bézier
+        ctx.moveTo(0, h);
+        ctx.quadraticCurveTo(currentX / 2, h, currentX, currentY);
+        ctx.stroke();
+
+        // Zone remplie (dégradé)
+        ctx.lineTo(currentX, h);
+        ctx.lineTo(0, h);
+        const grad = ctx.createLinearGradient(0, currentY, 0, h);
+        grad.addColorStop(0, "rgba(248, 44, 85, 0.5)");
+        grad.addColorStop(1, "rgba(248, 44, 85, 0)");
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // Avion
+        ctx.font = "30px Arial";
+        ctx.fillText("✈️", currentX - 10, currentY - 10);
     }
 
+    // --- GESTION BOUTONS & PARIS ---
     function handleAction() {
         AudioEngine.playTone('click');
+        
         if (currentState === STATE.WAITING) {
-            if (nextRoundBet > 0) nextRoundBet = 0;
-            else { let val = parseInt(document.getElementById('bet-input').value); if (val <= balance) nextRoundBet = val; else alert("Solde bas !"); }
-        } else if (currentState === STATE.FLYING) {
-            if (currentBet > 0 && !hasCashedOut) {
-                hasCashedOut = true; balance += Math.floor(currentBet * multiplier); updateBalance();
-                AudioEngine.playTone('cashout'); document.getElementById('multiplier').style.color = "var(--green)";
+            // Phase d'attente
+            if (nextRoundBet > 0) {
+                // Annuler
+                nextRoundBet = 0;
             } else {
-                if (nextRoundBet > 0) nextRoundBet = 0;
-                else { let val = parseInt(document.getElementById('bet-input').value); if (val <= balance) nextRoundBet = val; }
+                // Parier
+                let val = parseInt(document.getElementById('bet-input').value);
+                if (val <= balance) {
+                    nextRoundBet = val;
+                } else {
+                    alert("Solde insuffisant !");
+                }
             }
-        } else {
-             if (nextRoundBet > 0) nextRoundBet = 0;
-             else { let val = parseInt(document.getElementById('bet-input').value); if (val <= balance) nextRoundBet = val; }
+        } 
+        else if (currentState === STATE.FLYING) {
+            if (currentBet > 0 && !hasCashedOut) {
+                // ENCAISSER
+                hasCashedOut = true;
+                let win = Math.floor(currentBet * multiplier);
+                balance += win;
+                updateBalance();
+                AudioEngine.playTone('cashout');
+                // Petit effet visuel
+                document.getElementById('multiplier').style.color = "var(--green)";
+            } else {
+                // Parier pour le prochain tour
+                if (nextRoundBet > 0) {
+                    nextRoundBet = 0; // Annuler
+                } else {
+                    let val = parseInt(document.getElementById('bet-input').value);
+                    if (val <= balance) nextRoundBet = val;
+                }
+            }
+        }
+        else {
+            // En cas de CRASH
+            if (nextRoundBet > 0) nextRoundBet = 0;
+            else {
+                 let val = parseInt(document.getElementById('bet-input').value);
+                 if (val <= balance) nextRoundBet = val;
+            }
         }
         updateButton();
     }
 
     function updateButton() {
-        const btn = document.getElementById('action-btn'), txt = document.getElementById('btn-text'), sub = document.getElementById('btn-sub');
+        const btn = document.getElementById('action-btn');
+        const txt = document.getElementById('btn-text');
+        const sub = document.getElementById('btn-sub');
+        
+        // Reset classes
         btn.className = "btn-action";
         
         if (currentState === STATE.FLYING && currentBet > 0 && !hasCashedOut) {
-            btn.classList.add('btn-orange'); // Texte géré par gameLoop
-        } else {
+            // MODE ENCAISSEMENT
+            btn.classList.add('btn-orange');
+            // Le texte est géré dans la boucle gameLoop
+        } 
+        else {
+            // MODE PARI
             if (nextRoundBet > 0) {
-                btn.classList.add('btn-red'); txt.innerText = "ATTENTE..."; sub.innerText = "ANNULER (" + nextRoundBet + ")";
+                // Pari programmé -> Bouton Annuler (Rouge)
+                btn.classList.add('btn-red');
+                txt.innerText = "ATTENTE...";
+                sub.innerText = "ANNULER (" + nextRoundBet + ")";
             } else {
-                btn.classList.add('btn-green'); txt.innerText = "PARIER"; sub.innerText = "PROCHAIN TOUR";
+                // Pas de pari -> Bouton Parier (Vert)
+                btn.classList.add('btn-green');
+                txt.innerText = "PARIER";
+                sub.innerText = "PROCHAIN TOUR";
             }
         }
     }
 
-    function changeBet(amt) { let el = document.getElementById('bet-input'); let val = parseInt(el.value) + amt; if (val < 100) val = 100; el.value = val; }
-    function setBet(amt) { document.getElementById('bet-input').value = amt; }
-    function updateBalance() { document.getElementById('balance').innerText = balance; }
+    // --- UTILITAIRES ---
+    function changeBet(amount) {
+        let el = document.getElementById('bet-input');
+        let val = parseInt(el.value) + amount;
+        if (val < 100) val = 100;
+        el.value = val;
+    }
+    function setBet(amount) {
+        document.getElementById('bet-input').value = amount;
+    }
+    function updateBalance() {
+        document.getElementById('balance').innerText = balance;
+    }
     function addHistory(val) {
-        const bar = document.getElementById('history-bar'), badge = document.createElement('div');
+        const bar = document.getElementById('history-bar');
+        const badge = document.createElement('div');
         badge.className = val >= 10 ? "badge high" : val >= 2 ? "badge" : "badge low";
-        badge.innerText = val.toFixed(2) + "x"; bar.prepend(badge);
+        badge.innerText = val.toFixed(2) + "x";
+        bar.prepend(badge); // Ajoute au début
         if (bar.children.length > 20) bar.lastChild.remove();
     }
+
 </script>
 </body>
 </html>
