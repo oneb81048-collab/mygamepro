@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Richard Sport - Betting</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #004a99; --secondary: #1a2633; --accent: #f1c40f;
+            --success: #28a745; --bg: #0f1923; --text: #ffffff;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            background-color: var(--bg); color: var(--text);
+            font-family: 'Roboto', sans-serif; margin: 0;
+            display: flex; flex-direction: column; height: 100dvh; overflow: hidden;
+        }
+
+        /* --- HEADER --- */
+        header {
+            background: var(--primary); padding: 10px 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        .logo { font-weight: 900; font-style: italic; color: white; }
+        .balance { background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 20px; font-weight: bold; color: var(--accent); }
+
+        /* --- MAIN CONTENT --- */
+        main {
+            flex-grow: 1; overflow-y: auto; padding: 10px;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+
+        .section-title { font-size: 0.9rem; color: var(--accent); text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
+
+        /* --- MATCH CARD --- */
+        .match-card {
+            background: var(--secondary); border-radius: 10px; padding: 12px;
+            border-left: 4px solid var(--primary);
+        }
+        .teams { display: flex; justify-content: space-between; margin-bottom: 12px; font-weight: bold; }
+        
+        .odds-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .odd-btn {
+            background: #2c3e50; border: 1px solid #444; color: white;
+            padding: 8px; border-radius: 6px; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; transition: 0.2s;
+        }
+        .odd-btn span:first-child { font-size: 0.7rem; color: #aaa; }
+        .odd-btn span:last-child { font-weight: bold; color: var(--accent); }
+        .odd-btn.active { background: var(--primary); border-color: white; }
+
+        /* --- BET SLIP (COUPON) --- */
+        #coupon-bar {
+            background: var(--accent); color: #000; padding: 12px 20px;
+            font-weight: bold; display: flex; justify-content: space-between;
+            cursor: pointer; flex-shrink: 0;
+        }
+
+        #bet-overlay {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 80%;
+            background: #151e27; border-top-left-radius: 20px; border-top-right-radius: 20px;
+            z-index: 100; transform: translateY(100%); transition: 0.3s ease;
+            display: flex; flex-direction: column; padding: 20px;
+        }
+        #bet-overlay.open { transform: translateY(0); }
+
+        .coupon-item {
+            background: rgba(255,255,255,0.05); padding: 10px;
+            border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between;
+        }
+
+        .input-bet {
+            width: 100%; padding: 15px; background: #000; border: 1px solid #444;
+            color: var(--accent); font-size: 1.5rem; text-align: center; border-radius: 10px;
+            margin-top: auto;
+        }
+        .place-bet-btn {
+            background: var(--success); color: white; border: none;
+            padding: 15px; border-radius: 10px; font-weight: 900; margin-top: 10px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">RICHARD SPORT</div>
+    <div class="balance"><span id="user-balance">50000</span> FCFA</div>
+</header>
+
+<main>
+    <div class="section-title">Football - Direct</div>
+    
+    <div class="match-card">
+        <div class="teams"><span>Real Madrid</span> vs <span>FC Barcelone</span></div>
+        <div class="odds-grid">
+            <button class="odd-btn" onclick="addToSlip('Real Madrid', 'V1', 2.10, this)">
+                <span>V1</span><span>2.10</span>
+            </button>
+            <button class="odd-btn" onclick="addToSlip('Nul', 'X', 3.40, this)">
+                <span>X</span><span>3.40</span>
+            </button>
+            <button class="odd-btn" onclick="addToSlip('FC Barcelone', 'V2', 2.85, this)">
+                <span>V2</span><span>2.85</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="match-card">
+        <div class="teams"><span>PSG</span> vs <span>Bayern Munich</span></div>
+        <div class="odds-grid">
+            <button class="odd-btn" onclick="addToSlip('PSG', 'V1', 1.95, this)">
+                <span>V1</span><span>1.95</span>
+            </button>
+            <button class="odd-btn" onclick="addToSlip('Nul', 'X', 3.80, this)">
+                <span>X</span><span>3.80</span>
+            </button>
+            <button class="odd-btn" onclick="addToSlip('Bayern', 'V2', 3.10, this)">
+                <span>V2</span><span>3.10</span>
+            </button>
+        </div>
+    </div>
+</main>
+
+<div id="coupon-bar" onclick="toggleOverlay(true)">
+    <span>COUPON DE PARI</span>
+    <span id="coupon-count">0 match(s)</span>
+</div>
+
+<div id="bet-overlay">
+    <div style="display:flex; justify-content: space-between; margin-bottom: 20px;">
+        <h2 style="margin:0">Votre Pari</h2>
+        <button onclick="toggleOverlay(false)" style="background:none; border:none; color:white; font-size:1.5rem;">✕</button>
+    </div>
+
+    <div id="slip-list" style="overflow-y: auto; flex-grow: 1;">
+        </div>
+
+    <div style="padding: 15px 0;">
+        <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
+            <span>Côte Totale :</span>
+            <span id="total-odds" style="color:var(--accent); font-weight:bold;">1.00</span>
+        </div>
+        <input type="number" id="bet-amount" class="input-bet" value="1000" oninput="calcPotential()">
+        <div style="display:flex; justify-content: space-between; margin-top: 10px;">
+            <span>Gain potentiel :</span>
+            <span id="potential-win" style="color:var(--success); font-weight:bold;">0 FCFA</span>
+        </div>
+        <button class="place-bet-btn" onclick="placeBet()">PLACER LE PARI</button>
+    </div>
+</div>
+
+<script>
+    let balance = 50000;
+    let slip = [];
+
+    function addToSlip(team, type, odd, btn) {
+        // Toggle selection
+        if (btn.classList.contains('active')) {
+            btn.classList.remove('active');
+            slip = slip.filter(item => item.btn !== btn);
+        } else {
+            // Un seul choix par match (pour simplifier la démo)
+            btn.classList.add('active');
+            slip.push({ team, type, odd, btn });
+        }
+        updateSlipUI();
+    }
+
+    function updateSlipUI() {
+        document.getElementById('coupon-count').innerText = `${slip.length} match(s)`;
+        const list = document.getElementById('slip-list');
+        list.innerHTML = "";
+        
+        let totalOdd = 1;
+        slip.forEach(item => {
+            totalOdd *= item.odd;
+            list.innerHTML += `
+                <div class="coupon-item">
+                    <div>
+                        <div style="font-weight:bold">${item.team}</div>
+                        <div style="font-size:0.8rem; color:#aaa">Option: ${item.type}</div>
+                    </div>
+                    <div style="color:var(--accent)">${item.odd}</div>
+                </div>
+            `;
+        });
+
+        if(slip.length === 0) totalOdd = 0;
+        document.getElementById('total-odds').innerText = totalOdd.toFixed(2);
+        calcPotential();
+    }
+
+    function calcPotential() {
+        const amount = document.getElementById('bet-amount').value;
+        const totalOdd = parseFloat(document.getElementById('total-odds').innerText);
+        const win = Math.floor(amount * totalOdd);
+        document.getElementById('potential-win').innerText = win + " FCFA";
+    }
+
+    function toggleOverlay(show) {
+        document.getElementById('bet-overlay').classList.toggle('open', show);
+    }
+
+    function placeBet() {
+        const amount = parseInt(document.getElementById('bet-amount').value);
+        if (slip.length === 0) return alert("Choisissez un match !");
+        if (amount > balance) return alert("Solde insuffisant !");
+
+        balance -= amount;
+        document.getElementById('user-balance').innerText = balance;
+        
+        alert("Pari validé avec succès ! Bonne chance.");
+        
+        // Reset
+        slip.forEach(item => item.btn.classList.remove('active'));
+        slip = [];
+        updateSlipUI();
+        toggleOverlay(false);
+    }
+</script>
+
+</body>
+</html>
