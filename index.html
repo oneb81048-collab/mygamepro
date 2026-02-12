@@ -3,175 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loto Spécial - Richard Rules</title>
+    <title>Richard Studio - Multi-Jeux</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #f1c40f; --secondary: #27ae60; --dark: #1a1a1a; --danger: #e74c3c; }
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .container { background: #1f1f1f; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 500px; width: 100%; border: 1px solid #333; }
-        h1 { text-align: center; color: var(--primary); margin: 0 0 10px 0; }
-        .balance-box { text-align: center; font-size: 1.2rem; margin-bottom: 20px; background: #2c2c2c; padding: 10px; border-radius: 8px; }
-        .loto-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin-bottom: 20px; }
-        .num { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: #333; border-radius: 5px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: 0.2s; border: 1px solid #444; }
-        .num.selected { background: var(--primary); color: black; transform: scale(1.1); border-color: white; }
-        .num.first-selected { border: 2px solid #3498db; position: relative; }
-        .num.first-selected::after { content: '1er'; position: absolute; top: -10px; font-size: 0.5rem; background: #3498db; color: white; padding: 1px 3px; border-radius: 3px; }
-        .draw-area { display: flex; justify-content: center; gap: 10px; margin: 20px 0; min-height: 50px; }
-        .ball { width: 45px; height: 45px; background: radial-gradient(circle at 30% 30%, #f1c40f, #9b59b6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
-        @keyframes pop { 0% { transform: scale(0) rotate(-180deg); } 100% { transform: scale(1) rotate(0deg); } }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
-        .btn-draw { background: var(--secondary); box-shadow: 0 4px 0 #1e8449; }
-        .btn-draw:active { transform: translateY(2px); box-shadow: none; }
-        .btn-draw:disabled { background: #555; box-shadow: none; cursor: not-allowed; opacity: 0.6; }
-        .input-group { margin-bottom: 15px; text-align: center; }
-        input { background: #000; border: 1px solid #444; color: var(--primary); padding: 8px; border-radius: 5px; width: 100px; text-align: center; font-size: 1rem; font-weight: bold; }
-        .result-msg { text-align: center; margin-top: 15px; font-weight: bold; line-height: 1.4; padding: 10px; border-radius: 5px; }
-        .win { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
-        .loss { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
+        :root {
+            --primary: #f1c40f; /* Jaune Richard Studio */
+            --dark: #0f1923;
+            --card: #1b2633;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark);
+            color: var(--white);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            padding: 40px 20px;
+            text-align: center;
+            background: linear-gradient(to bottom, #1a2a3a, var(--dark));
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        header p {
+            color: #9aa8b9;
+            margin-top: 10px;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .game-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+            border: 1px solid #2c3b4d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(241, 196, 15, 0.2);
+        }
+
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .game-card h2 {
+            margin: 10px 0;
+            font-size: 1.5rem;
+        }
+
+        .game-card p {
+            font-size: 0.9rem;
+            color: #9aa8b9;
+            margin-bottom: 20px;
+        }
+
+        .btn-play {
+            background-color: var(--primary);
+            color: #000;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        .coming-soon {
+            opacity: 0.6;
+            cursor: not-allowed;
+            border-style: dashed;
+        }
+
+        .coming-soon:hover {
+            transform: none;
+            border-color: #2c3b4d;
+        }
+
+        footer {
+            margin-top: auto;
+            text-align: center;
+            padding: 30px;
+            color: #556677;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>LOTO ROYAL</h1>
-    <div class="balance-box">Solde: <span id="balance" style="color:var(--primary)">50000</span> FCFA</div>
+<header>
+    <h1>RICHARD STUDIO</h1>
+    <p>Promoteur Richard Chiriaque - Formation Tanpkè & Porto Novo</p>
+</header>
 
-    <div class="input-group">
-        Mise: <input type="number" id="bet-amount" value="1000" step="100"> FCFA
+<div class="container">
+    
+    <a href="aviator.html" class="game-card">
+        <div class="icon">✈️</div>
+        <h2>AVIATOR PRO</h2>
+        <p>Prenez votre envol et encaissez avant le crash !</p>
+        <div class="btn-play">Jouer maintenant</div>
+    </a>
+
+    <a href="onebet.html" class="game-card">
+        <div class="icon">⚽</div>
+        <h2>ONE BET</h2>
+        <p>Pariez sur les plus grands matchs de football.</p>
+        <div class="btn-play">Parier</div>
+    </a>
+
+    <a href="loto.html" class="game-card">
+        <div class="icon">🎱</div>
+        <h2>LOTO BÉNIN</h2>
+        <p>Tentez votre chance avec vos numéros fétiches.</p>
+        <div class="btn-play">Tirage</div>
+    </a>
+
+    <div class="game-card coming-soon">
+        <div class="icon">🎰</div>
+        <h2>MACHINE À SOUS</h2>
+        <p>Prochainement dans Richard Studio...</p>
+        <div style="color: var(--primary); font-size: 0.7rem;">EN DÉVELOPPEMENT</div>
     </div>
 
-    <div class="loto-grid" id="grid"></div>
+    <div class="game-card coming-soon">
+        <div class="icon">🃏</div>
+        <h2>POKER LIVE</h2>
+        <p>Défiez la banque en temps réel.</p>
+        <div style="color: var(--primary); font-size: 0.7rem;">BIENTÔT DISPONIBLE</div>
+    </div>
 
-    <button id="draw-btn" class="btn btn-draw" onclick="startDraw()" disabled>SÉLECTIONNEZ 5 NUMÉROS</button>
-
-    <div class="draw-area" id="draw-result"></div>
-    <div class="result-msg" id="msg"></div>
 </div>
 
-<script>
-    let balance = 50000;
-    let selectedNums = [];
-    const MAX_SELECT = 5;
-    const TOTAL_NUMS = 90;
-
-    const gridEl = document.getElementById('grid');
-    for (let i = 1; i <= TOTAL_NUMS; i++) {
-        let div = document.createElement('div');
-        div.className = 'num';
-        div.innerText = i;
-        div.onclick = () => toggleNumber(i, div);
-        gridEl.appendChild(div);
-    }
-
-    function toggleNumber(num, el) {
-        if (selectedNums.includes(num)) {
-            selectedNums = selectedNums.filter(n => n !== num);
-            el.classList.remove('selected', 'first-selected');
-            // Si on retire le premier, le suivant devient le premier
-            if(selectedNums.length > 0) {
-                const firstId = selectedNums[0];
-                document.querySelectorAll('.num').forEach(d => {
-                    if(parseInt(d.innerText) === firstId) d.classList.add('first-selected');
-                });
-            }
-        } else {
-            if (selectedNums.length < MAX_SELECT) {
-                selectedNums.push(num);
-                el.classList.add('selected');
-                if(selectedNums.length === 1) el.classList.add('first-selected');
-            }
-        }
-        
-        const btn = document.getElementById('draw-btn');
-        if(selectedNums.length === MAX_SELECT) {
-            btn.disabled = false;
-            btn.innerText = "LANCER LE TIRAGE";
-        } else {
-            btn.disabled = true;
-            btn.innerText = `CHOISIR ${MAX_SELECT - selectedNums.length} DE PLUS`;
-        }
-    }
-
-    async function startDraw() {
-        const bet = parseFloat(document.getElementById('bet-amount').value);
-        if (bet > balance) return alert("Solde insuffisant !");
-        if (bet <= 0) return alert("Mise invalide");
-
-        balance -= bet;
-        updateUI();
-        
-        document.getElementById('draw-btn').disabled = true;
-        document.getElementById('draw-result').innerHTML = '';
-        document.getElementById('msg').className = 'result-msg';
-        document.getElementById('msg').innerText = "Tirage en cours...";
-        
-        let drawnNums = [];
-        while(drawnNums.length < 5) {
-            let r = Math.floor(Math.random() * TOTAL_NUMS) + 1;
-            if(!drawnNums.includes(r)) drawnNums.push(r);
-        }
-
-        for (let num of drawnNums) {
-            await new Promise(r => setTimeout(r, 700));
-            addBall(num);
-        }
-
-        calculateGains(drawnNums, bet);
-    }
-
-    function addBall(num) {
-        let ball = document.createElement('div');
-        ball.className = 'ball';
-        ball.innerText = num;
-        document.getElementById('draw-result').appendChild(ball);
-    }
-
-    function calculateGains(drawn, bet) {
-        let matches = selectedNums.filter(n => drawn.includes(n)).length;
-        let gainPercent = 0;
-        let bonusPercent = 0;
-        let totalReturn = 0;
-
-        // Règle 1: Gain par nombre de chiffres
-        if (matches === 2) gainPercent = 0.10;
-        else if (matches === 3) gainPercent = 0.20;
-        else if (matches === 4) gainPercent = 0.30;
-        else if (matches === 5) gainPercent = 1.00;
-
-        // Règle 2: Bonus du premier chiffre (90%)
-        // Le premier sélectionné est selectedNums[0]
-        // Le premier tiré est drawn[0]
-        const firstMatch = (selectedNums[0] === drawn[0]);
-        if (firstMatch) {
-            bonusPercent = 0.90;
-        }
-
-        // Calcul final
-        // On récupère la mise + le gain (Ex: mise de 1000 + 10% de gain = 1100)
-        let profit = (bet * gainPercent) + (bet * bonusPercent);
-        
-        if (profit > 0 || matches >= 2 || firstMatch) {
-            totalReturn = bet + profit; // On rend la mise + le profit
-            balance += totalReturn;
-            
-            let text = `GAGNÉ ! <br> ${matches} chiffres corrects (+${(gainPercent*100).toFixed(0)}%)`;
-            if(firstMatch) text += `<br> BONUS PREMIER CHIFFRE (+90%) !`;
-            text += `<br> Total reçu: ${totalReturn.toFixed(0)} FCFA`;
-            
-            document.getElementById('msg').innerHTML = text;
-            document.getElementById('msg').classList.add('win');
-        } else {
-            document.getElementById('msg').innerHTML = `PERDU ! <br> Seulement ${matches} chiffres corrects.`;
-            document.getElementById('msg').classList.add('loss');
-        }
-
-        document.getElementById('draw-btn').disabled = false;
-        updateUI();
-    }
-
-    function updateUI() {
-        document.getElementById('balance').innerText = balance.toFixed(0);
-    }
-</script>
+<footer>
+    © 2026 Richard Chiriaque GBOHOUNME - Entrepreneur Électricien & Développeur
+</footer>
 
 </body>
 </html>
