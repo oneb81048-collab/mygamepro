@@ -2,176 +2,326 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loto Spécial - Richard Rules</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aviator Sound Pro - Richard Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #f1c40f; --secondary: #27ae60; --dark: #1a1a1a; --danger: #e74c3c; }
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .container { background: #1f1f1f; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 500px; width: 100%; border: 1px solid #333; }
-        h1 { text-align: center; color: var(--primary); margin: 0 0 10px 0; }
-        .balance-box { text-align: center; font-size: 1.2rem; margin-bottom: 20px; background: #2c2c2c; padding: 10px; border-radius: 8px; }
-        .loto-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin-bottom: 20px; }
-        .num { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: #333; border-radius: 5px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: 0.2s; border: 1px solid #444; }
-        .num.selected { background: var(--primary); color: black; transform: scale(1.1); border-color: white; }
-        .num.first-selected { border: 2px solid #3498db; position: relative; }
-        .num.first-selected::after { content: '1er'; position: absolute; top: -10px; font-size: 0.5rem; background: #3498db; color: white; padding: 1px 3px; border-radius: 3px; }
-        .draw-area { display: flex; justify-content: center; gap: 10px; margin: 20px 0; min-height: 50px; }
-        .ball { width: 45px; height: 45px; background: radial-gradient(circle at 30% 30%, #f1c40f, #9b59b6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
-        @keyframes pop { 0% { transform: scale(0) rotate(-180deg); } 100% { transform: scale(1) rotate(0deg); } }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
-        .btn-draw { background: var(--secondary); box-shadow: 0 4px 0 #1e8449; }
-        .btn-draw:active { transform: translateY(2px); box-shadow: none; }
-        .btn-draw:disabled { background: #555; box-shadow: none; cursor: not-allowed; opacity: 0.6; }
-        .input-group { margin-bottom: 15px; text-align: center; }
-        input { background: #000; border: 1px solid #444; color: var(--primary); padding: 8px; border-radius: 5px; width: 100px; text-align: center; font-size: 1rem; font-weight: bold; }
-        .result-msg { text-align: center; margin-top: 15px; font-weight: bold; line-height: 1.4; padding: 10px; border-radius: 5px; }
-        .win { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
-        .loss { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
+        :root {
+            --bg-dark: #0f1923; --panel-bg: #1b2633; --accent-red: #F82C55;
+            --accent-green: #28a745; --accent-orange: #ffbd16; --text-gray: #9aa8b9;
+        }
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body {
+            background-color: var(--bg-dark); color: white; font-family: 'Roboto', sans-serif;
+            margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+        }
+        .top-bar { height: 50px; background: #151e27; display: flex; align-items: center; padding: 0 15px; border-bottom: 1px solid #2c3b4d; }
+        .logo { font-weight: 900; font-size: 1.1rem; color: var(--accent-red); margin-right: 15px; font-style: italic; }
+        .history-bar { display: flex; gap: 6px; overflow: hidden; flex-grow: 1; }
+        .badge { padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; background: #2c3b4d; color: #eee; }
+        .badge.low { color: #34b4ff; } .badge.med { color: #a55eea; } .badge.high { color: #ffbd16; }
+
+        .stage-container { position: relative; flex-grow: 1; background: radial-gradient(circle at 50% 120%, #290f14 0%, #0f1923 70%); overflow: hidden; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .float-ui { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; width: 100%; }
+        #big-multiplier { font-size: clamp(3rem, 15vw, 6rem); font-weight: 900; margin: 0; text-shadow: 0 0 40px rgba(0,0,0,0.8); }
+        #status-msg { font-size: 1.2rem; text-transform: uppercase; font-weight: bold; color: var(--accent-red); margin-bottom: 10px; }
+        .loader-box { width: 220px; height: 4px; background: #222; margin: 15px auto; border-radius: 2px; overflow: hidden; }
+        #loader-fill { height: 100%; background: var(--accent-red); width: 0%; }
+
+        .controls-area { background: var(--panel-bg); padding: 15px; border-top: 1px solid #2c3b4d; }
+        .balance-line { display: flex; justify-content: space-between; max-width: 500px; margin: 0 auto 10px; font-size: 0.85rem; color: var(--text-gray); }
+        .bet-box { display: grid; grid-template-columns: 1fr 140px; gap: 10px; max-width: 500px; margin: 0 auto; background: #141b23; padding: 12px; border-radius: 12px; border: 1px solid #313e4d; }
+        .bet-inputs { display: flex; flex-direction: column; gap: 8px; }
+        .input-row { display: flex; background: #000; border-radius: 20px; padding: 2px; align-items: center; border: 1px solid #333; }
+        .input-row input { background: transparent; border: none; color: white; width: 100%; text-align: center; font-size: 1.1rem; font-weight: bold; }
+        .circle-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #444; background: #1a1a1a; color: white; cursor: pointer; }
+        .quick-bets { display: flex; gap: 4px; }
+        .quick-bets button { flex: 1; background: #2c3b4d; border: none; color: white; border-radius: 4px; font-size: 0.7rem; padding: 4px 0; cursor: pointer; }
+        .main-btn { border: none; border-radius: 12px; color: white; font-weight: 900; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: 0.1s; }
+        .main-btn:active { transform: translateY(2px); box-shadow: none; }
+        .main-btn span:first-child { font-size: 1.2rem; }
+        .main-btn span:last-child { font-size: 0.65rem; opacity: 0.9; font-weight: 400; }
+        .btn-bet { background: var(--accent-green); }
+        .btn-cashout { background: var(--accent-orange); color: #483407; }
+        .btn-cancel { background: var(--accent-red); }
+        
+        #audio-notice {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9);
+            z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>LOTO ROYAL</h1>
-    <div class="balance-box">Solde: <span id="balance" style="color:var(--primary)">50000</span> FCFA</div>
+<div id="audio-notice">
+    <h2>AVIATOR PRO</h2>
+    <p>Cliquez pour activer le son et jouer</p>
+    <button onclick="startApp()" style="padding: 15px 40px; background: var(--accent-red); color: white; border: none; border-radius: 30px; font-weight: bold; cursor: pointer;">ACTIVER LE JEU</button>
+</div>
 
-    <div class="input-group">
-        Mise: <input type="number" id="bet-amount" value="1000" step="100"> FCFA
+<div class="top-bar">
+    <div class="logo">AVIATOR</div>
+    <div class="history-bar" id="history-list"></div>
+</div>
+
+<div class="stage-container">
+    <canvas id="sky"></canvas>
+    <div class="float-ui">
+        <div id="status-msg"></div>
+        <div class="loader-box" id="loader-box" style="display:none;"><div id="loader-fill"></div></div>
+        <h1 id="big-multiplier">1.00x</h1>
     </div>
+</div>
 
-    <div class="loto-grid" id="grid"></div>
-
-    <button id="draw-btn" class="btn btn-draw" onclick="startDraw()" disabled>SÉLECTIONNEZ 5 NUMÉROS</button>
-
-    <div class="draw-area" id="draw-result"></div>
-    <div class="result-msg" id="msg"></div>
+<div class="controls-area">
+    <div class="balance-line">
+        <span>Solde:</span>
+        <span style="color:white; font-weight:bold;"><span id="balance-val">50000</span> FCFA</span>
+    </div>
+    <div class="bet-box">
+        <div class="bet-inputs">
+            <div class="input-row">
+                <button class="circle-btn" onclick="modifyBet(-100)">-</button>
+                <input type="number" id="bet-amount" value="1000">
+                <button class="circle-btn" onclick="modifyBet(100)">+</button>
+            </div>
+            <div class="quick-bets">
+                <button onclick="setBet(500)">500</button>
+                <button onclick="setBet(1000)">1000</button>
+                <button onclick="setBet(2000)">2000</button>
+                <button onclick="setBet(5000)">5000</button>
+            </div>
+        </div>
+        <button id="action-btn" class="main-btn btn-bet" onclick="handleMainAction()">
+            <span>PARIER</span>
+            <span id="btn-sub">PROCHAIN TOUR</span>
+        </button>
+    </div>
 </div>
 
 <script>
+    // --- AUDIO ENGINE ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let engineOsc = null;
+    let engineGain = null;
+
+    function playSound(type) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'click') {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        } else if (type === 'cashout') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+        } else if (type === 'crash') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+        }
+    }
+
+    function startEngineSound() {
+        engineOsc = audioCtx.createOscillator();
+        engineGain = audioCtx.createGain();
+        engineOsc.type = 'sawtooth';
+        engineOsc.frequency.setValueAtTime(60, audioCtx.currentTime);
+        engineGain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+        engineOsc.connect(engineGain);
+        engineGain.connect(audioCtx.destination);
+        engineOsc.start();
+    }
+
+    function updateEngineSound(mult) {
+        if (engineOsc) {
+            engineOsc.frequency.setTargetAtTime(60 + (mult * 20), audioCtx.currentTime, 0.1);
+            engineGain.gain.setTargetAtTime(0.02 + (mult * 0.005), audioCtx.currentTime, 0.1);
+        }
+    }
+
+    function stopEngineSound() {
+        if (engineOsc) {
+            engineOsc.stop();
+            engineOsc = null;
+        }
+    }
+
+    // --- GAME LOGIC ---
+    const canvas = document.getElementById('sky');
+    const ctx = canvas.getContext('2d');
+    const STATE = { WAITING: 'WAITING', FLYING: 'FLYING', CRASHED: 'CRASHED' };
+    let gameState = STATE.WAITING;
+    let multiplier = 1.00;
+    let crashPoint = 0;
+    let startTime = 0;
     let balance = 50000;
-    let selectedNums = [];
-    const MAX_SELECT = 5;
-    const TOTAL_NUMS = 90;
+    let currentBet = 0;
+    let pendingBet = 0;
+    let hasCashedOut = false;
 
-    const gridEl = document.getElementById('grid');
-    for (let i = 1; i <= TOTAL_NUMS; i++) {
-        let div = document.createElement('div');
-        div.className = 'num';
-        div.innerText = i;
-        div.onclick = () => toggleNumber(i, div);
-        gridEl.appendChild(div);
+    function startApp() {
+        document.getElementById('audio-notice').style.display = 'none';
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        init();
     }
 
-    function toggleNumber(num, el) {
-        if (selectedNums.includes(num)) {
-            selectedNums = selectedNums.filter(n => n !== num);
-            el.classList.remove('selected', 'first-selected');
-            // Si on retire le premier, le suivant devient le premier
-            if(selectedNums.length > 0) {
-                const firstId = selectedNums[0];
-                document.querySelectorAll('.num').forEach(d => {
-                    if(parseInt(d.innerText) === firstId) d.classList.add('first-selected');
-                });
+    function init() {
+        resize();
+        window.addEventListener('resize', resize);
+        startWaiting();
+    }
+
+    function resize() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+    }
+
+    function startWaiting() {
+        gameState = STATE.WAITING;
+        multiplier = 1.00;
+        hasCashedOut = false;
+        document.getElementById('status-msg').innerText = "Attente du prochain tour";
+        document.getElementById('loader-box').style.display = "block";
+        document.getElementById('big-multiplier').style.display = "none";
+
+        if (pendingBet > 0) {
+            currentBet = pendingBet;
+            pendingBet = 0;
+            balance -= currentBet;
+            updateUI();
+        }
+        updateButtonUI();
+
+        let progress = 0;
+        const timer = setInterval(() => {
+            progress += 1;
+            document.getElementById('loader-fill').style.width = progress + '%';
+            if (progress >= 100) { clearInterval(timer); startFlight(); }
+        }, 30);
+    }
+
+    function startFlight() {
+        gameState = STATE.FLYING;
+        document.getElementById('loader-box').style.display = "none";
+        document.getElementById('status-msg').innerText = "";
+        document.getElementById('big-multiplier').style.display = "block";
+        document.getElementById('big-multiplier').style.color = "white";
+        
+        let rand = Math.random();
+        crashPoint = (0.98 / (1 - rand));
+        if (rand < 0.05) crashPoint = 1.00;
+
+        startTime = Date.now();
+        startEngineSound();
+        updateButtonUI();
+        animate();
+    }
+
+    function animate() {
+        if (gameState !== STATE.FLYING) return;
+        let elapsed = (Date.now() - startTime) / 1000;
+        multiplier = Math.pow(1.08, elapsed * 2);
+        document.getElementById('big-multiplier').innerText = multiplier.toFixed(2) + "x";
+        
+        updateEngineSound(multiplier);
+        draw(elapsed);
+
+        if (multiplier >= crashPoint) {
+            doCrash();
+        } else {
+            if (currentBet > 0 && !hasCashedOut) updateCashoutButton();
+            requestAnimationFrame(animate);
+        }
+    }
+
+    function doCrash() {
+        gameState = STATE.CRASHED;
+        stopEngineSound();
+        playSound('crash');
+        document.getElementById('big-multiplier').innerText = "FLEW AWAY!";
+        document.getElementById('big-multiplier').style.color = "var(--accent-red)";
+        addHistory(crashPoint.toFixed(2));
+        currentBet = 0;
+        updateButtonUI();
+        setTimeout(startWaiting, 3000);
+    }
+
+    function draw(t) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let x = Math.min(canvas.width * 0.8, t * 60);
+        let y = canvas.height - 40 - (Math.pow(t, 2) * 4);
+        if (y < 40) y = 40;
+        ctx.beginPath(); ctx.lineWidth = 4; ctx.strokeStyle = "#F82C55";
+        ctx.moveTo(0, canvas.height); ctx.quadraticCurveTo(x/2, canvas.height, x, y);
+        ctx.stroke();
+        ctx.lineTo(x, canvas.height); ctx.lineTo(0, canvas.height);
+        let grad = ctx.createLinearGradient(0, y, 0, canvas.height);
+        grad.addColorStop(0, "rgba(248, 44, 85, 0.4)"); grad.addColorStop(1, "transparent");
+        ctx.fillStyle = grad; ctx.fill();
+        ctx.font = "30px serif"; ctx.fillText("✈️", x - 10, y + 10);
+    }
+
+    function handleMainAction() {
+        playSound('click');
+        let betVal = parseFloat(document.getElementById('bet-amount').value);
+        if (gameState === STATE.WAITING) {
+            if (pendingBet > 0) pendingBet = 0;
+            else { if (betVal > balance) return alert("Solde insuffisant"); pendingBet = betVal; }
+        } 
+        else if (gameState === STATE.FLYING) {
+            if (currentBet > 0 && !hasCashedOut) {
+                playSound('cashout');
+                balance += (currentBet * multiplier);
+                hasCashedOut = true;
+                updateUI();
+            } else {
+                if (pendingBet > 0) pendingBet = 0;
+                else { if (betVal > balance) return alert("Solde insuffisant"); pendingBet = betVal; }
             }
-        } else {
-            if (selectedNums.length < MAX_SELECT) {
-                selectedNums.push(num);
-                el.classList.add('selected');
-                if(selectedNums.length === 1) el.classList.add('first-selected');
+        }
+        updateButtonUI();
+    }
+
+    function updateButtonUI() {
+        const btn = document.getElementById('action-btn');
+        const sub = document.getElementById('btn-sub');
+        const txt = btn.querySelector('span:first-child');
+        btn.disabled = false;
+        if (gameState === STATE.WAITING) {
+            if (pendingBet > 0) { btn.className = "main-btn btn-cancel"; txt.innerText = "ANNULER"; sub.innerText = pendingBet + " FCFA"; }
+            else { btn.className = "main-btn btn-bet"; txt.innerText = "PARIER"; sub.innerText = "PROCHAIN TOUR"; }
+        } 
+        else if (gameState === STATE.FLYING) {
+            if (currentBet > 0 && !hasCashedOut) { btn.className = "main-btn btn-cashout"; txt.innerText = "ENCAISSER"; }
+            else { 
+                if (pendingBet > 0) { btn.className = "main-btn btn-cancel"; txt.innerText = "ANNULER"; sub.innerText = "POUR LE PROCHAIN ("+pendingBet+")"; }
+                else { btn.className = "main-btn btn-bet"; txt.innerText = "PARIER"; sub.innerText = "POUR LE PROCHAIN TOUR"; }
             }
-        }
-        
-        const btn = document.getElementById('draw-btn');
-        if(selectedNums.length === MAX_SELECT) {
-            btn.disabled = false;
-            btn.innerText = "LANCER LE TIRAGE";
-        } else {
-            btn.disabled = true;
-            btn.innerText = `CHOISIR ${MAX_SELECT - selectedNums.length} DE PLUS`;
-        }
+        } else btn.disabled = true;
     }
 
-    async function startDraw() {
-        const bet = parseFloat(document.getElementById('bet-amount').value);
-        if (bet > balance) return alert("Solde insuffisant !");
-        if (bet <= 0) return alert("Mise invalide");
-
-        balance -= bet;
-        updateUI();
-        
-        document.getElementById('draw-btn').disabled = true;
-        document.getElementById('draw-result').innerHTML = '';
-        document.getElementById('msg').className = 'result-msg';
-        document.getElementById('msg').innerText = "Tirage en cours...";
-        
-        let drawnNums = [];
-        while(drawnNums.length < 5) {
-            let r = Math.floor(Math.random() * TOTAL_NUMS) + 1;
-            if(!drawnNums.includes(r)) drawnNums.push(r);
-        }
-
-        for (let num of drawnNums) {
-            await new Promise(r => setTimeout(r, 700));
-            addBall(num);
-        }
-
-        calculateGains(drawnNums, bet);
+    function updateCashoutButton() {
+        document.getElementById('btn-sub').innerText = (currentBet * multiplier).toFixed(0) + " FCFA";
     }
 
-    function addBall(num) {
-        let ball = document.createElement('div');
-        ball.className = 'ball';
-        ball.innerText = num;
-        document.getElementById('draw-result').appendChild(ball);
-    }
-
-    function calculateGains(drawn, bet) {
-        let matches = selectedNums.filter(n => drawn.includes(n)).length;
-        let gainPercent = 0;
-        let bonusPercent = 0;
-        let totalReturn = 0;
-
-        // Règle 1: Gain par nombre de chiffres
-        if (matches === 2) gainPercent = 0.10;
-        else if (matches === 3) gainPercent = 0.20;
-        else if (matches === 4) gainPercent = 0.30;
-        else if (matches === 5) gainPercent = 1.00;
-
-        // Règle 2: Bonus du premier chiffre (90%)
-        // Le premier sélectionné est selectedNums[0]
-        // Le premier tiré est drawn[0]
-        const firstMatch = (selectedNums[0] === drawn[0]);
-        if (firstMatch) {
-            bonusPercent = 0.90;
-        }
-
-        // Calcul final
-        // On récupère la mise + le gain (Ex: mise de 1000 + 10% de gain = 1100)
-        let profit = (bet * gainPercent) + (bet * bonusPercent);
-        
-        if (profit > 0 || matches >= 2 || firstMatch) {
-            totalReturn = bet + profit; // On rend la mise + le profit
-            balance += totalReturn;
-            
-            let text = `GAGNÉ ! <br> ${matches} chiffres corrects (+${(gainPercent*100).toFixed(0)}%)`;
-            if(firstMatch) text += `<br> BONUS PREMIER CHIFFRE (+90%) !`;
-            text += `<br> Total reçu: ${totalReturn.toFixed(0)} FCFA`;
-            
-            document.getElementById('msg').innerHTML = text;
-            document.getElementById('msg').classList.add('win');
-        } else {
-            document.getElementById('msg').innerHTML = `PERDU ! <br> Seulement ${matches} chiffres corrects.`;
-            document.getElementById('msg').classList.add('loss');
-        }
-
-        document.getElementById('draw-btn').disabled = false;
-        updateUI();
-    }
-
-    function updateUI() {
-        document.getElementById('balance').innerText = balance.toFixed(0);
+    function modifyBet(amt) { playSound('click'); let el = document.getElementById('bet-amount'); let val = parseInt(el.value) + amt; if (val < 100) val = 100; el.value = val; }
+    function setBet(amt) { playSound('click'); document.getElementById('bet-amount').value = amt; }
+    function updateUI() { document.getElementById('balance-val').innerText = Math.floor(balance); }
+    function addHistory(val) {
+        const list = document.getElementById('history-list'); const span = document.createElement('span');
+        span.className = 'badge ' + (val < 2 ? 'low' : val < 10 ? 'med' : 'high');
+        span.innerText = val + 'x'; list.prepend(span); if (list.children.length > 15) list.lastChild.remove();
     }
 </script>
-
 </body>
 </html>
