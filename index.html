@@ -2,170 +2,199 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Richard Studio - Multi-Jeux</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My GamePro - Richard Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #f1c40f; /* Jaune Richard Studio */
-            --dark: #0f1923;
-            --card: #1b2633;
-            --white: #ffffff;
+            --primary: #00d2ff; /* Bleu néon Pro */
+            --accent: #f1c40f;  /* Or pour le côté "Pro" */
+            --dark-bg: #050a0f;
+            --card-bg: #101a26;
+            --text-light: #e0e6ed;
         }
+
+        * { box-sizing: border-box; transition: all 0.3s ease; }
 
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: var(--dark);
-            color: var(--white);
+            background-color: var(--dark-bg);
+            color: var(--text-light);
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
+        /* --- HEADER ADAPTATIF --- */
         header {
-            padding: 40px 20px;
+            padding: 50px 20px;
             text-align: center;
-            background: linear-gradient(to bottom, #1a2a3a, var(--dark));
+            background: radial-gradient(circle at top, #1a2a3a 0%, var(--dark-bg) 70%);
         }
 
-        header h1 {
-            font-size: 2.5rem;
+        .brand-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2rem, 8vw, 4rem);
+            font-weight: 900;
             margin: 0;
-            color: var(--primary);
+            background: linear-gradient(to right, var(--primary), #9d50bb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             text-transform: uppercase;
+            letter-spacing: 5px;
+        }
+
+        .sub-title {
+            color: var(--accent);
+            font-size: 0.9rem;
             letter-spacing: 2px;
-        }
-
-        header p {
-            color: #9aa8b9;
             margin-top: 10px;
+            font-weight: 300;
         }
 
-        .container {
-            padding: 20px;
-            max-width: 1000px;
-            margin: 0 auto;
+        /* --- GRILLE DE JEUX (PC & MOBILE) --- */
+        .game-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+            /* Mobile : 1 colonne | Tablette/PC : Colonnes flexibles */
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
         }
 
-        .game-card {
-            background: var(--card);
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
+        .card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid #1e2d3d;
+            position: relative;
             text-decoration: none;
-            color: white;
-            transition: all 0.3s ease;
-            border: 1px solid #2c3b4d;
+            color: inherit;
             display: flex;
             flex-direction: column;
+            height: 100%;
+        }
+
+        /* Effet PC Hover */
+        @media (hover: hover) {
+            .card:hover {
+                transform: translateY(-10px);
+                border-color: var(--primary);
+                box-shadow: 0 0 20px rgba(0, 210, 255, 0.2);
+            }
+        }
+
+        .card-header {
+            height: 150px;
+            display: flex;
             align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            background: rgba(255, 255, 255, 0.03);
         }
 
-        .game-card:hover {
-            transform: translateY(-10px);
-            border-color: var(--primary);
-            box-shadow: 0 10px 30px rgba(241, 196, 15, 0.2);
+        .card-body {
+            padding: 20px;
+            text-align: center;
+            flex-grow: 1;
         }
 
-        .icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
+        .card-body h2 {
+            margin: 0 0 10px 0;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            color: var(--primary);
         }
 
-        .game-card h2 {
-            margin: 10px 0;
-            font-size: 1.5rem;
+        .card-body p {
+            font-size: 0.85rem;
+            color: #8a99a8;
+            line-height: 1.6;
         }
 
-        .game-card p {
-            font-size: 0.9rem;
-            color: #9aa8b9;
-            margin-bottom: 20px;
-        }
-
-        .btn-play {
-            background-color: var(--primary);
+        .play-btn {
+            background: var(--primary);
             color: #000;
-            padding: 10px 25px;
-            border-radius: 25px;
-            font-weight: bold;
+            padding: 12px;
+            text-align: center;
+            font-weight: 800;
             text-transform: uppercase;
             font-size: 0.8rem;
+            margin: 0 20px 20px 20px;
+            border-radius: 8px;
         }
 
-        .coming-soon {
-            opacity: 0.6;
-            cursor: not-allowed;
-            border-style: dashed;
-        }
-
-        .coming-soon:hover {
-            transform: none;
-            border-color: #2c3b4d;
-        }
-
+        /* --- FOOTER --- */
         footer {
-            margin-top: auto;
             text-align: center;
-            padding: 30px;
-            color: #556677;
+            padding: 40px;
+            background: #030609;
             font-size: 0.8rem;
+            color: #4a5568;
+            margin-top: auto;
+        }
+
+        /* --- AJUSTEMENTS MOBILE --- */
+        @media (max-width: 600px) {
+            .game-grid {
+                grid-template-columns: 1fr; /* Force 1 seule colonne sur petit écran */
+                padding: 15px;
+            }
+            .brand-name {
+                letter-spacing: 2px;
+            }
         }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>RICHARD STUDIO</h1>
-    <p>Promoteur Richard Chiriaque - Formation Tanpkè & Porto Novo</p>
+    <div class="brand-name">My GamePro</div>
+    <div class="sub-title">BY RICHARD STUDIO</div>
+    <p style="font-size: 0.8rem; color: #556677; margin-top: 15px;">
+        Solutions de divertissement digital - Porto-Novo / Tanpkè
+    </p>
 </header>
 
-<div class="container">
+<div class="game-grid">
     
-    <a href="aviator.html" class="game-card">
-        <div class="icon">✈️</div>
-        <h2>AVIATOR PRO</h2>
-        <p>Prenez votre envol et encaissez avant le crash !</p>
-        <div class="btn-play">Jouer maintenant</div>
+    <a href="aviator.html" class="card">
+        <div class="card-header">🚀</div>
+        <div class="card-body">
+            <h2>AVIATOR</h2>
+            <p>Le jeu de crash numéro 1. Encaissez avant que l'avion ne disparaisse !</p>
+        </div>
+        <div class="play-btn">Lancer le vol</div>
     </a>
 
-    <a href="onebet.html" class="game-card">
-        <div class="icon">⚽</div>
-        <h2>ONE BET</h2>
-        <p>Pariez sur les plus grands matchs de football.</p>
-        <div class="btn-play">Parier</div>
+    <a href="onebet.html" class="card">
+        <div class="card-header">🏆</div>
+        <div class="card-body">
+            <h2>ONE BET</h2>
+            <p>Paris sportifs en direct. Toutes les côtes sur vos équipes favorites.</p>
+        </div>
+        <div class="play-btn">Parier</div>
     </a>
 
-    <a href="loto.html" class="game-card">
-        <div class="icon">🎱</div>
-        <h2>LOTO BÉNIN</h2>
-        <p>Tentez votre chance avec vos numéros fétiches.</p>
-        <div class="btn-play">Tirage</div>
+    <a href="loto.html" class="card">
+        <div class="card-header">🔮</div>
+        <div class="card-body">
+            <h2>LOTO 5/90</h2>
+            <p>Tentez de deviner les numéros gagnants et remportez le jackpot.</p>
+        </div>
+        <div class="play-btn">Jouer au Loto</div>
     </a>
-
-    <div class="game-card coming-soon">
-        <div class="icon">🎰</div>
-        <h2>MACHINE À SOUS</h2>
-        <p>Prochainement dans Richard Studio...</p>
-        <div style="color: var(--primary); font-size: 0.7rem;">EN DÉVELOPPEMENT</div>
-    </div>
-
-    <div class="game-card coming-soon">
-        <div class="icon">🃏</div>
-        <h2>POKER LIVE</h2>
-        <p>Défiez la banque en temps réel.</p>
-        <div style="color: var(--primary); font-size: 0.7rem;">BIENTÔT DISPONIBLE</div>
-    </div>
 
 </div>
 
 <footer>
-    © 2026 Richard Chiriaque GBOHOUNME - Entrepreneur Électricien & Développeur
+    &copy; 2026 Richard Chiriaque GBOHOUNME<br>
+    Propulsé par Richard Studio - Excellence en Électricité & Digital
 </footer>
 
 </body>
