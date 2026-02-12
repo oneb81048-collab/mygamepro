@@ -3,298 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professeur Volta 2.0 - Cours & Exercices</title>
+    <title>Professeur Volta Pro - IA Électricité</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
         :root {
-            --primary: #2c3e50;
-            --accent: #e67e22; /* Orange pour les exercices */
-            --user-bg: #3498db;
-            --ai-bg: #ecf0f1;
-            --quiz-bg: #fff3cd;
+            --primary: #1a252f;
+            --accent: #f39c12;
+            --glass: rgba(255, 255, 255, 0.95);
         }
 
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #f4f6f7;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #000000 100%);
             margin: 0;
             display: flex;
             justify-content: center;
+            align-items: center;
             height: 100vh;
+            color: #333;
         }
 
-        .main-container {
-            width: 100%;
-            max-width: 900px;
-            background: #fff;
+        .app-container {
+            width: 95%;
+            max-width: 1000px;
+            height: 90vh;
+            background: var(--glass);
+            display: flex;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        /* Panneau Latéral (Avatar et Citation) */
+        .sidebar {
+            width: 300px;
+            background: var(--primary);
+            color: white;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 0 25px rgba(0,0,0,0.15);
-        }
-
-        header {
-            background-color: var(--primary);
-            color: white;
-            padding: 15px;
+            align-items: center;
             text-align: center;
+            border-right: 4px solid var(--accent);
         }
 
-        .api-setup {
-            margin-top: 10px;
-            padding: 5px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 4px;
-            display: inline-block;
+        .avatar-box {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: url('https://img.freepik.com/vecteurs-premium/professeur-sciences-debout-devant-tableau-noir-tenant-pointeur_113065-225.jpg') center/cover;
+            border: 4px solid var(--accent);
+            margin-bottom: 20px;
         }
 
-        #apiKeyInput {
-            padding: 5px;
-            border-radius: 3px;
-            border: none;
-            width: 220px;
-            font-size: 0.85em;
+        .quote {
+            font-style: italic;
+            font-size: 0.9em;
+            color: var(--accent);
+            margin-top: auto;
+            border-top: 1px solid #34495e;
+            padding-top: 20px;
+        }
+
+        /* Zone de Chat */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
         }
 
         #chat-window {
             flex: 1;
-            padding: 20px;
+            padding: 25px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 15px;
-            scroll-behavior: smooth;
         }
 
         .message {
-            max-width: 85%;
             padding: 15px;
-            border-radius: 8px;
-            line-height: 1.6;
-            font-size: 0.95rem;
+            border-radius: 12px;
+            max-width: 80%;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
         }
 
-        .message.user {
-            align-self: flex-end;
-            background-color: var(--user-bg);
-            color: white;
-        }
+        .user { align-self: flex-end; background: #3498db; color: white; }
+        .ai { align-self: flex-start; background: #f1f2f6; border-left: 5px solid var(--accent); }
 
-        .message.ai {
-            align-self: flex-start;
-            background-color: var(--ai-bg);
-            border-left: 4px solid var(--primary);
-            color: #2c3e50;
-        }
-
-        .message.quiz {
-            align-self: flex-start;
-            background-color: var(--quiz-bg);
-            border-left: 4px solid var(--accent);
-            color: #5d4037;
-        }
-
-        .input-area {
+        /* Contrôles */
+        .controls {
             padding: 20px;
-            border-top: 1px solid #ddd;
+            background: #eee;
             display: flex;
             gap: 10px;
-            background: #fafafa;
+            align-items: center;
         }
 
         textarea {
             flex: 1;
-            padding: 12px;
             border: 1px solid #ccc;
-            border-radius: 5px;
-            resize: none;
+            border-radius: 8px;
+            padding: 10px;
             height: 50px;
+            resize: none;
         }
 
-        .btn-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        button {
-            padding: 0 20px;
+        .icon-btn {
+            background: var(--primary);
+            color: white;
             border: none;
-            border-radius: 5px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
             cursor: pointer;
-            font-weight: bold;
-            height: 100%;
-            transition: 0.2s;
+            font-size: 1.2em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: 0.3s;
         }
 
-        #sendBtn { background-color: var(--primary); color: white; flex: 1; }
-        #sendBtn:hover { background-color: #34495e; }
+        .icon-btn:hover { transform: scale(1.1); background: var(--accent); }
+        .mic-active { background: #e74c3c !important; animation: pulse 1s infinite; }
 
-        #quizBtn { background-color: var(--accent); color: white; flex: 1; }
-        #quizBtn:hover { background-color: #d35400; }
-        
-        /* Loading animation */
-        .typing { font-style: italic; color: #888; font-size: 0.9em; }
-
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-<div class="main-container">
-    <header>
-        <h2>⚡ Professeur Volta 2.0</h2>
-        <div class="api-setup">
-            Clé API Hugging Face : 
-            <input type="password" id="apiKeyInput" placeholder="Collez hf_... ici">
-        </div>
-    </header>
-
-    <div id="chat-window">
-        <div class="message ai">
-            <strong>Bonjour !</strong> Posez-moi une question sur l'électricité.<br>
-            Une fois que j'ai répondu, cliquez sur <strong>"Générer un Exercice"</strong> pour tester votre compréhension immédiate.
+<div class="app-container">
+    <div class="sidebar">
+        <div class="avatar-box"></div>
+        <h3>Professeur Volta</h3>
+        <p>Expert en Génie Électrique</p>
+        <div class="quote">
+            "Les choix d'aujourd'hui impactent le futur."
         </div>
     </div>
 
-    <div class="input-area">
-        <textarea id="userInput" placeholder="Ex: Comment fonctionne un transistor ?"></textarea>
-        <div class="btn-group">
-            <button id="sendBtn" onclick="handleUserRequest()">Envoyer</button>
-            <button id="quizBtn" onclick="generateQuiz()">Générer un Exercice</button>
+    <div class="chat-area">
+        <div id="chat-window">
+            <div class="message ai">
+                Bonjour. Je suis prêt à vous enseigner l'électricité. Parlez-moi ou écrivez votre question.
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="icon-btn" id="micBtn" title="Parler">🎤</button>
+            <textarea id="userInput" placeholder="Posez votre question ici..."></textarea>
+            <button class="icon-btn" id="sendBtn" title="Envoyer">⚡</button>
         </div>
     </div>
 </div>
 
 <script>
-    const MODEL_ID = "mistralai/Mistral-Nemo-Instruct-2407"; 
-    
+    // CONFIGURATION PRIVÉE
+    const HF_KEY = "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"; 
+    const MODEL = "mistralai/Mistral-Nemo-Instruct-2407";
+
     const chatWindow = document.getElementById('chat-window');
     const userInput = document.getElementById('userInput');
     const sendBtn = document.getElementById('sendBtn');
-    const quizBtn = document.getElementById('quizBtn');
-    const apiKeyInput = document.getElementById('apiKeyInput');
+    const micBtn = document.getElementById('micBtn');
 
-    // Variable pour se souvenir du sujet de conversation
-    let lastContext = "Les bases de l'électricité";
+    // --- RECONNAISSANCE VOCALE (STT) ---
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'fr-FR';
 
-    // Gestion de la clé API (Sauvegarde locale)
-    if(localStorage.getItem('hf_api_key')) {
-        apiKeyInput.value = localStorage.getItem('hf_api_key');
+        micBtn.onclick = () => {
+            recognition.start();
+            micBtn.classList.add('mic-active');
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            userInput.value = transcript;
+            micBtn.classList.remove('mic-active');
+            processRequest();
+        };
+
+        recognition.onspeechend = () => recognition.stop();
+        recognition.onerror = () => micBtn.classList.remove('mic-active');
     }
-    apiKeyInput.addEventListener('change', () => localStorage.setItem('hf_api_key', apiKeyInput.value));
 
-    // Gestion Entrée
-    userInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleUserRequest();
-        }
-    });
+    // --- SYNTHÈSE VOCALE (TTS) ---
+    function speak(text) {
+        // On nettoie le texte du Markdown pour la lecture
+        const cleanText = text.replace(/[#*`$]/g, '');
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.lang = 'fr-FR';
+        utterance.rate = 0.9; // Un peu plus lent pour être pédagogique
+        window.speechSynthesis.speak(utterance);
+    }
 
-    async function handleUserRequest() {
+    // --- LOGIQUE IA ---
+    async function processRequest() {
         const text = userInput.value.trim();
         if (!text) return;
 
-        lastContext = text; // On mémorise le sujet pour le quiz
         addMessage(text, 'user');
         userInput.value = '';
-        
-        // Prompt Standard
-        const prompt = `Tu es un professeur expert en électricité. Réponds de façon pédagogique, précise et structure ta réponse. Utilise LaTeX ($...$) pour les formules.
-        Question : ${text}`;
-        
-        await callAI(prompt, 'ai');
-    }
 
-    async function generateQuiz() {
-        if(lastContext === "") {
-            alert("Posez d'abord une question pour définir le sujet du quiz !");
-            return;
-        }
-
-        const topic = lastContext.length > 50 ? "le sujet précédent" : lastContext;
-        
-        // Prompt Spécial Quiz
-        const prompt = `Tu es un examinateur strict mais juste.
-        Génère un QCM (Questionnaire à Choix Multiples) de 3 questions sur ce sujet précis : "${topic}".
-        
-        Format exigé pour chaque question :
-        1. La question claire.
-        2. Trois options (A, B, C).
-        3. Après les choix, mets un bloc "Réponse" caché ou en gras expliquant la bonne réponse.
-        
-        Sois créatif et piège les erreurs courantes.`;
-
-        addMessage(`<em>Génération d'un exercice sur : "${topic}"...</em>`, 'quiz');
-        await callAI(prompt, 'quiz');
-    }
-
-    async function callAI(systemPrompt, type) {
-        const apiKey = apiKeyInput.value.trim();
-        if (!apiKey) {
-            alert("Clé API manquante !");
-            return;
-        }
-
-        setLoading(true);
-
-        const formattedPrompt = `<s>[INST] ${systemPrompt} [/INST]`;
+        const systemPrompt = `Tu es le Professeur Volta. Tu réponds de manière courte, claire et scientifique. 
+        Utilise des termes techniques mais explique les simplement. Termine toujours tes explications par une petite phrase encourageante.`;
 
         try {
-            const response = await fetch(
-                `https://api-inference.huggingface.co/models/${MODEL_ID}`,
-                {
-                    headers: { 
-                        Authorization: `Bearer ${apiKey}`,
-                        "Content-Type": "application/json"
-                    },
-                    method: "POST",
-                    body: JSON.stringify({
-                        inputs: formattedPrompt,
-                        parameters: {
-                            max_new_tokens: 1500,
-                            temperature: 0.7,
-                            return_full_text: false
-                        }
-                    }),
-                }
-            );
+            const response = await fetch(`https://api-inference.huggingface.co/models/${MODEL}`, {
+                headers: { Authorization: `Bearer ${HF_KEY}`, "Content-Type": "application/json" },
+                method: "POST",
+                body: JSON.stringify({ inputs: `[INST] ${systemPrompt} \n Question: ${text} [/INST]` }),
+            });
 
             const data = await response.json();
-            
-            if (data.error) {
-                addMessage("Erreur API : " + data.error, 'ai');
-            } else {
-                addMessage(data[0].generated_text, type);
-            }
+            const aiResponse = data[0].generated_text.split('[/INST]')[1].trim();
 
-        } catch (error) {
-            addMessage("Erreur réseau : " + error.message, 'ai');
+            addMessage(aiResponse, 'ai');
+            speak(aiResponse); // L'IA parle
+
+        } catch (e) {
+            addMessage("Désolé, j'ai une petite panne de secteur. Réessayez.", 'ai');
         }
-
-        setLoading(false);
     }
 
-    function addMessage(text, type) {
+    function addMessage(text, sender) {
         const div = document.createElement('div');
-        div.classList.add('message', type);
+        div.className = `message ${sender}`;
         div.innerHTML = marked.parse(text);
         chatWindow.appendChild(div);
         chatWindow.scrollTop = chatWindow.scrollHeight;
         if (window.MathJax) MathJax.typesetPromise([div]);
     }
 
-    function setLoading(isLoading) {
-        sendBtn.disabled = isLoading;
-        quizBtn.disabled = isLoading;
-        if(isLoading) {
-            document.body.style.cursor = "wait";
-        } else {
-            document.body.style.cursor = "default";
-        }
-    }
-</script>
+    sendBtn.onclick = processRequest;
+    userInput.onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); processRequest(); } };
 
+</script>
 </body>
 </html>
